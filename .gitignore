@@ -3,3 +3,9 @@
 output
 build
 dist
+main_images/
+*.jpg
+*.jpeg
+*.png
+*.7z
+*.exe

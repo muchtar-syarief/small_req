@@ -24,11 +24,12 @@ def main():
     for fname in get_files(base_path):
         file = os.path.join(base_path, fname)
         img_file = Image.open(file)
+
         
         img_resize = img_file.resize((1200,1200))
         
         output_file = os.path.join(output, fname)
-        img_resize.save(output_file, dpi=(1200,1200))
+        img_resize.save(output_file, dpi=(1200,1200), quality=)
         logging.info(f"Convert image {fname}")
     return
 
