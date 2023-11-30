@@ -550,3 +550,26 @@ BunkerCoin,ASIC - Scrypt,true,https://miningpoolstats.stream/bunkercoin,https://
 TuboPay,ASIC - Scrypt,false,https://miningpoolstats.stream/tubopay,https://github.com/TuboPay/TUBOPAY-v1.0.1,3,,0 ,5.46M,?
 PapiCoin,ASIC - Scrypt,true,https://miningpoolstats.stream/papicoin,https://github.com/PapicoinProject/Papicoin,1,,0 ,47.7M,?
 Reflect,ASIC - Scrypt,true,https://miningpoolstats.stream/reflect,https://github.com/Reetreflect/reet,4,,0 ,1.26M,?
+Perbug,ASIC - Scrypt,true,https://miningpoolstats.stream/perbug,https://github.com/Perbug/PerbugCode,7,,0 ,46.43B,?
+Gopecoin,ASIC - Scrypt,true,https://miningpoolstats.stream/gopecoin,https://github.com/gope-project/gope,6,,0 ,101.42M,?
+Cyberyen,ASIC - Scrypt,true,https://miningpoolstats.stream/cyberyen,https://github.com/cyberyen/cyberyen,252,,1.13K ,0,?
+PotreroCoin,ASIC - Scrypt,true,https://miningpoolstats.stream/potrerocoin,https://github.com/PotreroCoin/PotreroCoin,0,,0 ,0,?
+Fiurycoin,ASIC - Scrypt,true,https://miningpoolstats.stream/fiurycoin,https://github.com/soulistyces/fiurycoinU,289,,,0,?
+DigitalPrice,ASIC - Equihash,true,https://miningpoolstats.stream/digitalprice,https://github.com/DigitalPrice/DigitalPrice,1,,0 ,38.95M / 100M (39.0%),?
+Spacecoin,ASIC - Equihash,true,https://miningpoolstats.stream/spacecoin,https://github.com/SpacecoinSPACE/spacecoin,3,,0 ,0 / 5.9B (0.0%),?
+Collidercoin,ASIC - Equihash,false,https://miningpoolstats.stream/collidercoin,,1,,,,
+Buck,ASIC - Equihash,true,https://miningpoolstats.stream/buck,https://github.com/BuckCoin/buck,6,,0 ,790.25M / 1B (79.0%),142750 BUCK
+Tokel,ASIC - Equihash,false,https://miningpoolstats.stream/tokel,https://github.com/TokelPlatform/tokel_dapp,4,,0.64 ,129.91M / 200.17M (64.9%),?
+Bytecoin,ASIC - CryptoNight,false,https://miningpoolstats.stream/bytecoin,https://github.com/bcndev/bytecoin,8,,0 ,184.47B / 184.07B (100.2%),6600 BCN
+CroatCoin,ASIC - CryptoNight,false,https://miningpoolstats.stream/croatcoin,https://github.com/CroatApps/Croat,11,,0 ,96.57M / 100.47M (96.1%),5232 CROAT
+VirtacoinPlus,ASIC - X11,false,https://miningpoolstats.stream/virtacoinplus,https://github.com/virtacoinplus/virtacoinplus,0,,0 ,16.2M,2414 XVP
+Cannabiscoin,ASIC - X11,true,https://miningpoolstats.stream/cannabiscoin,https://github.com/cannabiscoindev/cannabiscoin420,1,,0 ,265.7M / 106M (250.7%),?
+FuturoCoin,ASIC - X11,true,https://miningpoolstats.stream/futurocoin,https://github.com/futuro-coin/Futuro,115,,10.63 ,0 / 100M (0.0%),?
+LKS Coin,ASIC - X11,true,https://miningpoolstats.stream/lkscoin,https://github.com/LKSCOIN/lkscoin,0,,0 ,0,?
+RuxCrypto,ASIC - X11,true,https://miningpoolstats.stream/ruxcrypto,https://github.com/Ruxiol/ruxcryptoRXC,0,,0 ,11.17M / 21M (53.2%),5198 RXC
+Shield,ASIC - Lyra2REv2,true,https://miningpoolstats.stream/shield-lyra,https://github.com/ShieldCoin/SHIELD,0,,0 ,512.97M / 752.52M (68.2%),?
+Scribe,ASIC - Lyra2REv2,true,https://miningpoolstats.stream/scribe,https://github.com/scribenetwork/scribe,1,,0 ,12.55M / 32.7M (38.4%),?
+Shield,ASIC - Groestl | Qubit | Skein | Quark,true,https://miningpoolstats.stream/shield-groestl,https://github.com/ShieldCoin/SHIELD,0,,0 ,512.97M / 752.52M (68.2%),?
+BADcoin,ASIC - Groestl | Qubit | Skein | Quark,true,https://miningpoolstats.stream/badcoin-groestl,https://github.com/ScriptProdigy/Badcoin,0,,0 ,6.49B,?
+BADcoin,ASIC - Groestl | Qubit | Skein | Quark,true,https://miningpoolstats.stream/badcoin-skein,https://github.com/ScriptProdigy/Badcoin,1,,0 ,6.49B,?
+KumaCoin,ASIC - Groestl | Qubit | Skein | Quark,false,https://miningpoolstats.stream/kumacoin,https://github.com/kumacoinproject/kumacoin,0,,0 ,929.13M,?
