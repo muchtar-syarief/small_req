@@ -92,7 +92,7 @@ func (d *DriverSession) OpenCoin(node *cdp.Node, hasil *CoinResult) error {
 
 	err = chromedp.Run(
 		timeOutCtx,
-		setViewportAndScale(2560, 1423, 0.75),
+		setViewportAndScale(1920, 1080, 0.75),
 		chromedp.WaitVisible("#mainpage"),
 		chromedp.WaitVisible("#myAlgo"),
 		chromedp.WaitVisible("#stats_marketcap"),

@@ -11,9 +11,9 @@ type Stat struct {
 
 type CoinResult struct {
 	Name          string `csv:"name"`
-	IsDepends     bool   `csv:"is_depends"`
 	Algorithm     string `csv:"algorithm"`
 	AlgorithmType string `csv:"algorithm_type"`
+	IsDepends     bool   `csv:"is_depends"`
 	CoinUrl       string `csv:"coin_url"`
 	GithubLink    string `csv:"github_link"`
 	Miners        string `csv:"miners"`
