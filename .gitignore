@@ -1,5 +1,5 @@
 .venv
-.zip
+*.zip
 output
 build
 dist
@@ -9,3 +9,9 @@ main_images/
 *.png
 *.7z
 *.exe
+__pycache__
+*.apk
+*.pem
+*.conf
+*.properties
+*.dll
