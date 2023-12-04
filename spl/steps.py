@@ -82,13 +82,19 @@ class Steps:
         #     return True
         
         # return False
-    
+
     def get_shop_product(self):
         product_selector = '//*[@content-desc="shop_page_product_tab"]'
         product_btn: XPathSelector = self.driver.xpath(product_selector)
         product_btn.wait(timeout=5)
         product_btn.click()
+
+        selector = '//*[@resource-id="buttonSearchResultPagePrice"]'
+        element: XPathSelector = self.driver.xpath(selector)
+        element.wait(timeout=5)
+        element.click()
         
+        time.sleep(1)
         product_price_selector = '//*[@resource-id="labelItemCardDiscPrice"]/../..'
         product_element: XPathSelector = self.driver.xpath(product_price_selector)
         product_element.wait(timeout=10)
@@ -139,7 +145,7 @@ class Steps:
     def select_default_variant(self):
         element: UiObject = self.driver(resourceId="sectionTierVariation")
         child = element.child(className="android.widget.ScrollView")
-        child.scroll.toEnd()
+        child.scroll.to(text="Jumlah")
 
         time.sleep(2)
         selector = 'cartPanelTierVariation'
