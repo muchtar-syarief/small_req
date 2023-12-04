@@ -18,7 +18,8 @@ class Steps:
     def open_app(self):
         self.driver.app_start(self.app_package, use_monkey=True)
         time.sleep(2)
-        self.driver.xpath('//*[@resource-id="com.shopee.id:id/text_container"]').click()
+        search_element: XPathSelector = self.driver.xpath('//*[@resource-id="com.shopee.id:id/text_container"]')
+        search_element.click()
 
     def to_search_shop(self, shop_init: str) -> bool:
         self.input_element(shop_init)
@@ -119,16 +120,23 @@ class Steps:
             return True
         return False
 
-    def select_payment(self):
+    def select_payment(self) -> None:
         payment_selector_id = "checkoutPaymentMethod"
-        self.driver(scrollable=True).scroll.to(resourceId=payment_selector_id)
-
         payment_selector = f'//*[@resource-id="{payment_selector_id}"]'
         payment_element: XPathSelector = self.driver.xpath(payment_selector)
-        payment_element.click()
+        payment_element.wait(timeout=2)
+        if payment_element.exists:
+            payment_element.click()
+            return
+
+        scroll_selector = 'android.widget.ScrollView'
+        scroll_element: UiObject = self.driver(className=scroll_selector)
+        scroll_element.scroll.to(resourceId=payment_selector_id)
+        
+        return self.select_payment()
 
     
-    def buy_now(self):
+    def buy_now(self) -> None:
         buy_selector = '//*[@resource-id="buttonProductBuyNow"]'
         buy_element: XPathSelector = self.driver.xpath(buy_selector)
         buy_element.click()
@@ -142,12 +150,16 @@ class Steps:
         
         return False
 
-    def select_default_variant(self):
-        element: UiObject = self.driver(resourceId="sectionTierVariation")
-        child = element.child(className="android.widget.ScrollView")
-        child.scroll.to(text="Jumlah")
+    def select_default_variant(self) -> None:
+        jumlah_selector = '//*[@text="Jumlah"]'
+        jumlah_element: XPathSelector = self.driver.xpath(jumlah_selector)
+        jumlah_element.wait(timeout=2)
+        if not jumlah_element.exists:
+            element: UiObject = self.driver(resourceId="sectionTierVariation")
+            child = element.child(className="android.widget.ScrollView")
+            child.scroll.to(text="Jumlah")
 
-        time.sleep(2)
+        time.sleep(1)
         selector = 'cartPanelTierVariation'
         elements: UiObject = self.driver(resourceId=selector)
 
@@ -157,24 +169,13 @@ class Steps:
             time.sleep(1)
             opts = element.child(resourceId=btn_selector)
             if opts.exists:
-                if len(opts) >= 10:
+                if len(opts) >= 8:
                     opts[-1].click()
                 else:
                     opt: UiObject
                     for i, opt in enumerate(opts):
                         opt.click()
                         break
-                    
-                
-
-
-        # variants_selector = '//*[@resource-id="buttonOption_unselected"]'
-        # variants_element: XPathSelector = self.driver.xpath(variants_selector)
-        # variants_element.wait(timeout=2)
-        # variants: list[XMLElement] = variants_element.all()
-        # for variant in variants:
-        #     variant.click()
-
 
     def submit_buy(self):
         selector = '//*[@resource-id="buttonCartPanelSubmit"]'
@@ -193,15 +194,21 @@ class Steps:
 
             
     def is_use_paylater(self) -> bool:
-        spl_selector = "//android.widget.TextView[contains(@text, 'SPayLater')]"
+        spl_active_selector = '//*[@resource-id="imageCheck"]'
+
+        spl_selector = "//android.widget.TextView[contains(@text, 'SPayLater')]/.."
         spl_element: XPathSelector = self.driver.xpath(spl_selector)
         spl_element.wait(timeout=3)
-        if spl_element.exists:
+
+        spl_active_element = spl_element.child(spl_active_selector)
+        spl_active_element.wait(2)
+        if spl_active_element.exists:
             self.back(4)
             return True
         
         self.back(4)
         return False
+
 
     def close_app(self):
         self.driver.app_stop(self.__app_package)

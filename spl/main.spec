@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('./cacert.pem', './certify/cacert.pem')],
+    datas=[('./cacert.pem', './certifi/'), ('./app-uiautomator.apk', './assets/app/'), ('./app-uiautomator-test.apk', './assets/app/')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -34,5 +34,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['./icon.ico'],
+    icon=['icon.ico'],
 )

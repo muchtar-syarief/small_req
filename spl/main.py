@@ -1,10 +1,10 @@
 import os,csv, sys
 import time
-import subprocess
 import adbutils
 import uiautomator2 as u2
 
 from steps import Steps
+from atx import ATX
 
 def list_datasouce():
     direktori = os.getcwd()
@@ -19,7 +19,7 @@ def override_req_cacert():
     def override_where():
         """ overrides certifi.core.where to return actual location of cacert.pem"""
         # change this to match the location of cacert.pem
-        return sys._MEIPASS+"/certify/cacert.pem"
+        return sys._MEIPASS+"/certifi/cacert.pem"
 
     # is the program compiled?
     if hasattr(sys, "frozen"):
@@ -61,6 +61,10 @@ if __name__ == "__main__":
     data_read = list_datasouce()
 
     d = u2.connect(device)
+    if getattr(sys, 'frozen', False):
+        atx = ATX(driver=d)
+        atx.init_atx_app()
+    
     steps = Steps(d)
 
     steps.open_app()
@@ -111,7 +115,7 @@ if __name__ == "__main__":
                         steps.select_default_variant()
                         time.sleep(1)
                         steps.submit_buy()
-                        time.sleep(3)
+                        time.sleep(2)
                         if steps.check_checkout():
                             break
                 else:
