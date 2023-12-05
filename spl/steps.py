@@ -3,6 +3,14 @@ import time
 from uiautomator2 import Device
 from uiautomator2._selector import UiObject
 from uiautomator2.xpath import XPathSelector, XMLElement
+from retry import retry
+
+
+class SortProductPriceError(Exception):
+    pass
+
+class CheckingPaylaterError(Exception):
+    pass
 
 class Steps:
     __app_package: str = "com.shopee.id"
@@ -40,14 +48,14 @@ class Steps:
             self.driver.press("back")
             time.sleep(1)
 
-        # search_selector = "android.widget.EditText"
+        # search_selector = '//*[@resource-id="viewSearchBar"]/android.widget.EditText'
         # search_element = self.driver(className=search_selector)
         # search_element.wait(timeout=1)
         # if search_element.exists:
         #     return
         
         # self.driver.press("back")
-        # return self.back_until_search_shop()
+        # return self.back()
     
     
     def input_element(self, input: str):
@@ -74,16 +82,8 @@ class Steps:
             
         return False
 
-        # selector = f"//android.widget.TextView[@text='{shop}']/.."
-        # elements: XPathSelector = self.driver.xpath(selector)
-        # elements.wait(timeout=3)
-        # all_element: list[XMLElement] = elements.all()
-        # for element in all_element:
-        #     element.click()
-        #     return True
-        
-        # return False
 
+    @retry(exceptions=SortProductPriceError, tries=3, delay=0.5)
     def get_shop_product(self):
         product_selector = '//*[@content-desc="shop_page_product_tab"]'
         product_btn: XPathSelector = self.driver.xpath(product_selector)
@@ -93,7 +93,10 @@ class Steps:
         selector = '//*[@resource-id="buttonSearchResultPagePrice"]'
         element: XPathSelector = self.driver.xpath(selector)
         element.wait(timeout=5)
-        element.click()
+        if not element.exists: 
+            raise SortProductPriceError("Sort product price element not found")
+        else:
+            element.click()
         
         time.sleep(1)
         product_price_selector = '//*[@resource-id="labelItemCardDiscPrice"]/../..'
@@ -105,20 +108,20 @@ class Steps:
     def check_submit_buy(self):
         buy_selector = "buttonProductBuyNow"
         buy_element: XPathSelector = self.driver.xpath(buy_selector)
-        buy_element.wait(timeout=5)
+        buy_element.wait(timeout=2)
         if buy_element.exists:
             return True       
 
         self.back(3)
         return False
 
-    def check_variation(self) -> bool:
-        variation_selector = "sectionTierVariation"
-        variation_element: XPathSelector = self.driver.xpath(variation_selector)
-        variation_element.wait(timeout=2)
-        if variation_element.exists:
-            return True
-        return False
+    # def check_variation(self) -> bool:
+    #     variation_selector = "sectionTierVariation"
+    #     variation_element: XPathSelector = self.driver.xpath(variation_selector)
+    #     variation_element.wait(timeout=2)
+    #     if variation_element.exists:
+    #         return True
+    #     return False
 
     def select_payment(self) -> None:
         payment_selector_id = "checkoutPaymentMethod"
@@ -142,34 +145,38 @@ class Steps:
         buy_element.click()
     
     def check_variant(self) -> bool:
-        variant_selector = '//*[@resource-id="sectionTierVariation"]'
+        variant_selector = '//*[@resource-id="cartPanelTierVariation"]'
         element: XPathSelector = self.driver.xpath(variant_selector)
         element.wait(timeout=2)
         if element.exists:
             return True
-        
         return False
-
-    def select_default_variant(self) -> None:
+    
+    def all_variant_appear(self) -> bool:
         jumlah_selector = '//*[@text="Jumlah"]'
         jumlah_element: XPathSelector = self.driver.xpath(jumlah_selector)
         jumlah_element.wait(timeout=2)
-        if not jumlah_element.exists:
-            element: UiObject = self.driver(resourceId="sectionTierVariation")
-            child = element.child(className="android.widget.ScrollView")
-            child.scroll.to(text="Jumlah")
+        return jumlah_element.exists
+    
+    def scroll_variant(self):
+        element: UiObject = self.driver(resourceId="sectionTierVariation")
+        child = element.child(className="android.widget.ScrollView")
+        child.scroll.to(text="Jumlah")
 
-        time.sleep(1)
+    def select_default_variant(self, start_from: int = 0) -> None:
         selector = 'cartPanelTierVariation'
         elements: UiObject = self.driver(resourceId=selector)
 
         btn_selector = "buttonOption_unselected"
         element: UiObject
         for ind, element in enumerate(elements):
+            if ind < start_from:
+                continue
+
             time.sleep(1)
             opts = element.child(resourceId=btn_selector)
             if opts.exists:
-                if len(opts) >= 8:
+                if len(opts) > 8:
                     opts[-1].click()
                 else:
                     opt: UiObject
@@ -192,22 +199,26 @@ class Steps:
             return True
         return False
 
-            
+    @retry(exceptions=CheckingPaylaterError, tries=3, delay=0.5)
     def is_use_paylater(self) -> bool:
-        spl_active_selector = '//*[@resource-id="imageCheck"]'
-
-        spl_selector = "//android.widget.TextView[contains(@text, 'SPayLater')]/.."
+        spl_selector = "//android.widget.TextView[contains(@text, 'SPayLater')]/../../../../.."
         spl_element: XPathSelector = self.driver.xpath(spl_selector)
-        spl_element.wait(timeout=3)
+        spl_element.wait(timeout=20)
+        if spl_element.exists:
+            spl_element.click(timeout=2)
 
-        spl_active_element = spl_element.child(spl_active_selector)
-        spl_active_element.wait(2)
-        if spl_active_element.exists:
-            self.back(4)
-            return True
+            spl_active_selector = '//*[@resource-id="imageCheck"]'
+            spl_active_element: XPathSelector = spl_element.child(spl_active_selector)
+            spl_active_element.wait(timeout=3)
+            if spl_active_element.exists:
+                self.back(4)
+                return True
+            
+            self.back(5)
+            return False
         
-        self.back(4)
-        return False
+        raise CheckingPaylaterError("checking pay later error")
+
 
 
     def close_app(self):

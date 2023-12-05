@@ -71,11 +71,19 @@ if __name__ == "__main__":
 
     results = []
 
+    file_path = "./report_spl.csv"
+    open_type = "w+"
+    if os.path.exists(file_path):
+        open_type = "a"
+
+
     headers = ["username","status"]
-    with open("report_spl.csv", "w+", newline='') as f:
+    with open(file_path, open_type, newline='') as f:
         writer = csv.writer(f)
 
-        writer.writerow(headers)
+        if open_type == "w+":
+            writer.writerow(headers)
+            
         try:
             print("Masuk ke pencarian toko")
             for kolom in data_read[(mulai):]:
@@ -88,7 +96,7 @@ if __name__ == "__main__":
                 status = 'Toko Tidak ditemukan'
                 print('Checking ', shop)
 
-                if not steps.search_shop(shop):
+                if not steps.search_shop(shop.strip()):
                     print(f"Toko {shop} tidak ditemukan")
 
                     result = [shop, status]
@@ -96,11 +104,15 @@ if __name__ == "__main__":
                     # results.append(result)
                     continue
                 
-                time.sleep(2)
-                steps.get_shop_product()
+                try:
+                    steps.get_shop_product()
+                except Exception as e:
+                    print(e)
+                    steps.back(1)
+                    continue
+
                 steps.buy_now()
 
-                time.sleep(3)
                 if not steps.check_submit_buy():
                     print(f"Toko {shop} off")
 
@@ -111,13 +123,23 @@ if __name__ == "__main__":
                     continue
                 
                 if steps.check_variant():
-                    while True:
-                        steps.select_default_variant()
-                        time.sleep(1)
-                        steps.submit_buy()
-                        time.sleep(2)
-                        if steps.check_checkout():
-                            break
+                    if steps.all_variant_appear():
+                        while True:
+                            steps.select_default_variant()
+                            time.sleep(1)
+                            steps.submit_buy()
+                            if steps.check_checkout():
+                                break
+                    else:
+                        while True:
+                            steps.select_default_variant()
+                            steps.scroll_variant()
+                            steps.select_default_variant(1)
+                            time.sleep(1)
+                            steps.submit_buy()
+                            if steps.check_checkout():
+                                break
+
                 else:
                     steps.submit_buy()
 
