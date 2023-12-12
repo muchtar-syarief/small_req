@@ -25,9 +25,12 @@ class Steps:
 
     def open_app(self):
         self.driver.app_start(self.app_package, use_monkey=True)
-        time.sleep(2)
+    
+    def tap_search_bar(self) -> None:
         search_element: XPathSelector = self.driver.xpath('//*[@resource-id="com.shopee.id:id/text_container"]')
+        search_element.wait(timeout=10)
         search_element.click()
+
 
     def to_search_shop(self, shop_init: str) -> bool:
         self.input_element(shop_init)
@@ -201,20 +204,21 @@ class Steps:
 
     @retry(exceptions=CheckingPaylaterError, tries=3, delay=0.5)
     def is_use_paylater(self) -> bool:
-        spl_selector = "//android.widget.TextView[contains(@text, 'SPayLater')]/../../../../.."
+        spl_selector = "//android.widget.TextView[contains(@text, 'SPayLater')]/../../../../../.."
         spl_element: XPathSelector = self.driver.xpath(spl_selector)
         spl_element.wait(timeout=20)
         if spl_element.exists:
-            spl_element.click(timeout=2)
+            # spl_element.click(timeout=2)
 
-            spl_active_selector = '//*[@resource-id="imageCheck"]'
-            spl_active_element: XPathSelector = spl_element.child(spl_active_selector)
+            # spl_active_selector = '//*[@resource-id="imageCheck"]'
+            spl_monthly_selector = '//*[@resource-id="buttonExpandedOption"]'
+            spl_active_element: XPathSelector = spl_element.child(spl_monthly_selector)
             spl_active_element.wait(timeout=3)
             if spl_active_element.exists:
                 self.back(4)
                 return True
             
-            self.back(5)
+            self.back(4)
             return False
         
         raise CheckingPaylaterError("checking pay later error")

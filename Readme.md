@@ -14,5 +14,19 @@ Crawl data from [Mining Poll Stats](https://miningpoolstats.stream).
 
 
 
-### d 
+## SPl (Shopee Pay Later) Checker
 SPL Checker.
+
+How run
+```
+cd spl 
+pipenv install
+pipenv run cmd
+python main.py
+```
+
+
+Build .exe file:
+```
+pyinstaller main.spec
+```

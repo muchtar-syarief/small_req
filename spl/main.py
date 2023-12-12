@@ -67,8 +67,6 @@ if __name__ == "__main__":
     
     steps = Steps(d)
 
-    steps.open_app()
-
     results = []
 
     file_path = "./report_spl.csv"
@@ -85,6 +83,9 @@ if __name__ == "__main__":
             writer.writerow(headers)
             
         try:
+            steps.open_app()
+            steps.tap_search_bar()
+
             print("Masuk ke pencarian toko")
             for kolom in data_read[(mulai):]:
                 shop = kolom[0]
@@ -159,7 +160,8 @@ if __name__ == "__main__":
                 
         except Exception as e:
             print(e)
-        
+            with open("log_error", "w+", newline='') as f:
+                f.write(e.__str__())
         finally: 
             # headers = ["username","status"]
             # with open("report_spl.csv", "w+", newline='') as f:

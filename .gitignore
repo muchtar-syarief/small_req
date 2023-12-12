@@ -10,7 +10,7 @@ main_images/
 *.7z
 *.exe
 __pycache__
-*.apk
+# *.apk
 *.pem
 *.conf
 *.properties
