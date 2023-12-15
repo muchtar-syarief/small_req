@@ -1,10 +1,14 @@
 import os,csv, sys
-import time
 import adbutils
 import uiautomator2 as u2
 
-from steps import Steps
+from steps import Steps, SelectVariantError
 from atx import ATX
+
+
+class NoDeviceConnectedError(Exception):
+    pass
+
 
 def list_datasouce():
     direktori = os.getcwd()
@@ -36,9 +40,10 @@ def override_req_cacert():
         requests.utils.DEFAULT_CA_BUNDLE_PATH = override_where()
         requests.adapters.DEFAULT_CA_BUNDLE_PATH = override_where()
 
-class NoDeviceConnectedError(Exception):
-    pass
-
+def save_results(data: list[str]):
+    with open("./report_spl.csv", "a", newline="") as file:
+        w = csv.writer(file)
+        w.writerow(data)
 
 if __name__ == "__main__":
     override_req_cacert()
@@ -67,108 +72,99 @@ if __name__ == "__main__":
     
     steps = Steps(d)
 
-    results = []
 
     file_path = "./report_spl.csv"
-    open_type = "w+"
-    if os.path.exists(file_path):
-        open_type = "a"
-
-
-    headers = ["username","status"]
-    with open(file_path, open_type, newline='') as f:
-        writer = csv.writer(f)
-
-        if open_type == "w+":
+    open_type = "a"
+    if not os.path.exists(file_path):
+        open_type = "w+"
+        headers = ["username","status"]
+        with open(file_path, open_type, newline='') as f:
+            writer = csv.writer(f)
             writer.writerow(headers)
-            
-        try:
-            steps.open_app()
-            steps.tap_search_bar()
+    try:
+        steps.open_app()
+        steps.tap_search_bar()
 
-            print("Masuk ke pencarian toko")
-            for kolom in data_read[(mulai):]:
-                shop = kolom[0]
-                if steps.to_search_shop(shop):
-                    break
+        print("Masuk ke pencarian toko")
+        for kolom in data_read[(mulai):]:
+            shop = kolom[0]
+            if steps.to_search_shop(shop):
+                break
 
-            for kolom in data_read[(mulai):]:
-                shop = kolom[0]
-                status = 'Toko Tidak ditemukan'
-                print('Checking ', shop)
+        for kolom in data_read[(mulai):]:
+            shop = kolom[0]
+            status = 'Toko Tidak ditemukan'
+            print('Checking ', shop)
 
-                if not steps.search_shop(shop.strip()):
-                    print(f"Toko {shop} tidak ditemukan")
 
-                    result = [shop, status]
-                    writer.writerow(result)
-                    # results.append(result)
-                    continue
+            result: list[str]
+
+            if not steps.search_shop(shop.strip()):
+                print(f"Toko {shop} tidak ditemukan")
+
+                result = [shop, status]
+                save_results(result)
+                continue
                 
-                try:
-                    steps.get_shop_product()
-                except Exception as e:
-                    print(e)
-                    steps.back(1)
-                    continue
+            try:
+                steps.get_shop_product()
+            except Exception as e:
+                print(e)
+                steps.back(1)
+                continue
 
-                steps.buy_now()
+            steps.buy_now()
 
-                if not steps.check_submit_buy():
-                    print(f"Toko {shop} off")
+            if steps.is_shop_off():
+                print(f"Toko {shop} off")
+                status = "Status toko Off"
+                result = [shop, status]
 
-                    status = "Status toko Off"
-                    result = [shop, status]
-                    writer.writerow(result)
-                    # results.append(result)
-                    continue
-                
+                save_results(result)
+                steps.back(3)
+                continue
+
+            try:                
                 if steps.check_variant():
-                    if steps.all_variant_appear():
-                        while True:
-                            steps.select_default_variant()
-                            time.sleep(1)
-                            steps.submit_buy()
-                            if steps.check_checkout():
-                                break
-                    else:
-                        while True:
-                            steps.select_default_variant()
-                            steps.scroll_variant()
-                            steps.select_default_variant(1)
-                            time.sleep(1)
-                            steps.submit_buy()
-                            if steps.check_checkout():
-                                break
-
+                    steps.select_default_variant()
+                    steps.submit_buy()
+                    if not steps.check_checkout():
+                        raise SelectVariantError("Uiautomator can't handle variant")
                 else:
                     steps.submit_buy()
+            except SelectVariantError as e:
+                print(e)
+                print("Try alternative")
+                steps.select_variant_alternative()
+                if not steps.check_checkout():
+                    raise SelectVariantError("Uiautomator can't handle variant")
+            except Exception as e:
+                print(shop, e)
+                result = [shop, "Tolong cek manual"]
+                save_results(result)
+                steps.back(3)
+                continue
 
-                steps.select_payment()
+            steps.select_payment()
 
+            try:
                 if steps.is_use_paylater():
                     status = 'SPL Aktiv'
                     result = [shop, status]
-                    writer.writerow(result)
-                    # results.append(result)
                 else:
                     status = 'No SPL'
                     result = [shop, status]
-                    writer.writerow(result)
-                    # results.append(result)
+                save_results(result)
+            except Exception as e:
+                print(shop, e)
+                result = [shop, "Tolong cek manual"]
+                save_results(result)
+            finally:
+                steps.back(4)
 
-                
-        except Exception as e:
-            print(e)
-            with open("log_error", "w+", newline='') as f:
-                f.write(e.__str__())
-        finally: 
-            # headers = ["username","status"]
-            # with open("report_spl.csv", "w+", newline='') as f:
-            #     writer = csv.writer(f)
-
-            #     writer.writerow(headers)
-
-            #     for row in results:
-            #         writer.writerow(row)
-            steps.close_app()
+    except Exception as e:
+        print(shop, e)
+        with open("log_error", "w+", newline='') as f:
+            f.write(e.__str__())
+    finally: 
+        steps.close_app()

@@ -1,0 +1,22 @@
+Buka usb debugging
+install requirement
+
+adb install app-uiautomator.apk
+adb install app-uiautomator-test.apk
+tar -xzvf atx-agent_0.10.0_linux_armv6.tar.gz
+adb push atx-agent /data/local/tmp/
+adb shell chmod 755 /data/local/tmp/atx-agent
+jika devices unautorized , cabung dan copot autorisasi usb konekan kembali 
+
+Sample connect
+import uiautomator2 as u2
+d = u2.connect('057913708B110840')
+print(d.info)
+
+
+Weditor
+d.xpath('//*[@text="Play Store"]').click()
+d.xpath('//*[@text="Telusuri aplikasi & game"]').set_text('Mobile Legend')
+d.xpath('//*[@text="Search for apps & games"]').set_text('Mobile Legend')
+d.press('enter')
+d.swipe_ext("up", 0.6) #scrolldown

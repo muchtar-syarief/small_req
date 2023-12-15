@@ -2,12 +2,37 @@ import time
 
 from uiautomator2 import Device
 from uiautomator2._selector import UiObject
-from uiautomator2.xpath import XPathSelector
+from uiautomator2.xpath import XPathSelector, XMLElement
 
 from element import Element
 
 
-class Account(Element):
+class SwitchingAccountError(Exception):
+    pass
+
+class MainAddressError(Exception):
+    pass
+
+
+class Account:
+    name: str = ""
+    main_address: str = ""
+    addresses: list[str] = []
+    last_selected: str = ""
+
+    def next_selected_address(self) -> str:
+        for ind, address in enumerate(self.addresses):
+            if address == self.last_selected:
+                if ind != len(self.addresses)-1:
+                    next = ind+1
+                    return self.addresses[next]
+                return self.addresses[0]
+            
+    def set_last_selected(self, data: str) -> None:
+        selected = data.split("|")[0]
+        self.last_selected = selected.strip()
+
+class AccountSteps(Element):
 
     def __init__(self, driver: Device):
         super().__init__(driver=driver)
@@ -45,7 +70,7 @@ class Account(Element):
         elements.wait(timeout=3)
 
         if elements.exists:
-            content_selector = 'com.shopee.id:id/tv_current'
+            content_selector = 'com.shopee.id:id/img_current'
             
             element: UiObject
             for i, element in enumerate(elements):
@@ -63,16 +88,23 @@ class Account(Element):
                         return False
     
     def switch_account(self) -> None:        
+        selector = 'com.shopee.id:id/rv_account_list'
+        element: UiObject = self.driver(resourceId=selector)
+        element.wait(timeout=15)
+        if not element.exists:
+            raise NotImplementedError
+
         selector = 'com.shopee.id:id/container_layout'
         elements: UiObject = self.driver(resourceId=selector)
         elements.wait(timeout=3)
 
-        if self.check_active_all():
+        active_all = self.check_active_all()
+        if active_all:
             elements.click()
             return
 
         if elements.exists:
-            content_selector = 'com.shopee.id:id/tv_current'
+            content_selector = "com.shopee.id:id/img_current"
             
             element: UiObject
             for i, element in enumerate(elements):
@@ -80,13 +112,42 @@ class Account(Element):
                 current_account.wait(timeout=3)
 
                 if current_account.exists:
-                    contents: UiObject = current_account.child(className='android.widget.TextView')
+                    next = i+1
+                    next_account: UiObject = elements[next].child(resourceId=content_selector)
+                    next_account.wait(timeout=3)
+                    if not next_account.exists:
+                        elements[next].click()
+                        break
+    
+    def is_success_switching(self) -> bool:
+        selector = 'sectionMeHeader'
+        element: UiObject = self.driver(resourceId=selector)
+        element.wait(timeout=20)
+        return element.exists
+    
+    def get_account(self) -> str:
+        selector = '//*[@resource-id="labelUserName"]'
+        element: XPathSelector = self.driver.xpath(selector)
+        element.wait(timeout=10)
+        if element.exists:
+            username = element.get_text()
+            return username
+        
+    def get_account_addresses(self) -> list[str]:
+        selector = "//android.view.ViewGroup[contains(@resource-id, 'addressRow')]"
+        element: XPathSelector = self.driver.xpath(selector)
+        element.wait(timeout=10)
+        addresses_el: list[XMLElement] = element.all()
+
+        addresses: list[str] = []
+        for address in addresses_el:
+            id: str = address.attrib.get("resource-id")
+            address_name = id.split("_")[-1]
+            addresses.append(address_name)
+
+        return addresses
 
 
-                    # if i != len(elements)-1:
-                    #     next = i+1
-                    #     element[next].click()
-                    #     return
-                    # else:
-                    #     elements.click()
-                    #     return
+    def set_selected_address(self, address: str):
+        address = address.split("|")[0]
+        self.last_selected = address.strip()

@@ -5,6 +5,8 @@ from uiautomator2._selector import UiObject
 from uiautomator2.xpath import XPathSelector, XMLElement
 from retry import retry
 
+class SelectVariantError(Exception):
+    pass
 
 class SortProductPriceError(Exception):
     pass
@@ -49,17 +51,7 @@ class Steps:
     def back(self, count: int):
         for i in range(count):
             self.driver.press("back")
-            time.sleep(1)
-
-        # search_selector = '//*[@resource-id="viewSearchBar"]/android.widget.EditText'
-        # search_element = self.driver(className=search_selector)
-        # search_element.wait(timeout=1)
-        # if search_element.exists:
-        #     return
-        
-        # self.driver.press("back")
-        # return self.back()
-    
+            time.sleep(1)    
     
     def input_element(self, input: str):
         search_selector = "android.widget.EditText"
@@ -108,23 +100,13 @@ class Steps:
         product_element.click()
 
 
-    def check_submit_buy(self):
-        buy_selector = "buttonProductBuyNow"
-        buy_element: XPathSelector = self.driver.xpath(buy_selector)
-        buy_element.wait(timeout=2)
-        if buy_element.exists:
-            return True       
-
-        self.back(3)
-        return False
-
-    # def check_variation(self) -> bool:
-    #     variation_selector = "sectionTierVariation"
-    #     variation_element: XPathSelector = self.driver.xpath(variation_selector)
-    #     variation_element.wait(timeout=2)
-    #     if variation_element.exists:
-    #         return True
-    #     return False
+    def is_shop_off(self):
+        variation_element: UiObject = self.driver(resourceId="sectionTierVariation")
+        variation_element.wait(timeout=5)
+        if variation_element.exists:
+            return False
+        
+        return True
 
     def select_payment(self) -> None:
         payment_selector_id = "checkoutPaymentMethod"
@@ -139,18 +121,22 @@ class Steps:
         scroll_element: UiObject = self.driver(className=scroll_selector)
         scroll_element.scroll.to(resourceId=payment_selector_id)
         
+        time.sleep(0.5)
         return self.select_payment()
 
     
     def buy_now(self) -> None:
         buy_selector = '//*[@resource-id="buttonProductBuyNow"]'
         buy_element: XPathSelector = self.driver.xpath(buy_selector)
-        buy_element.click()
+        buy_element.wait(timeout=5)
+        if buy_element.exists:
+            time.sleep(0.25)
+            buy_element.click()
     
-    def check_variant(self) -> bool:
+    def check_variant(self) -> bool:    
         variant_selector = '//*[@resource-id="cartPanelTierVariation"]'
         element: XPathSelector = self.driver.xpath(variant_selector)
-        element.wait(timeout=2)
+        element.wait(timeout=5)
         if element.exists:
             return True
         return False
@@ -167,6 +153,9 @@ class Steps:
         child.scroll.to(text="Jumlah")
 
     def select_default_variant(self, start_from: int = 0) -> None:
+        if start_from >= 2:
+            return
+
         selector = 'cartPanelTierVariation'
         elements: UiObject = self.driver(resourceId=selector)
 
@@ -175,7 +164,6 @@ class Steps:
         for ind, element in enumerate(elements):
             if ind < start_from:
                 continue
-
             time.sleep(1)
             opts = element.child(resourceId=btn_selector)
             if opts.exists:
@@ -186,13 +174,31 @@ class Steps:
                     for i, opt in enumerate(opts):
                         opt.click()
                         break
+                start_from += 1
+        
+        if self.all_variant_appear():
+            return
+
+        self.scroll_variant()
+        return self.select_default_variant(start_from=start_from)
+
+    def select_variant_alternative(self):
+        time.sleep(1)
+        self.driver.xpath('//*[@resource-id="cartPanelTierVariation"]/android.view.ViewGroup[1]').click()
+        self.driver.xpath('//*[@text="Beli Sekarang"]').click()
+        time.sleep(1)
+        try:
+            self.driver.xpath('//*[@resource-id="sectionTierVariation"]/android.widget.ScrollView[1]/android.view.ViewGroup[1]/android.view.ViewGroup[3]/android.view.ViewGroup[1]/android.view.ViewGroup[1]').click(timeout=2)
+            self.driver.xpath('//*[@text="Beli Sekarang"]').click()
+        except:
+            pass
+
 
     def submit_buy(self):
-        selector = '//*[@resource-id="buttonCartPanelSubmit"]'
+        selector = '//*[@resource-id="buttonCartPanelSubmit"]/android.view.ViewGroup'
         element: XPathSelector = self.driver.xpath(selector)
         element.wait(timeout=5)
-        buy_btn: XMLElement = element.child("/android.view.ViewGroup")
-        buy_btn.click()
+        element.click()
 
     def check_checkout(self):
         selector = '//*[@text="Checkout"]'
@@ -208,17 +214,13 @@ class Steps:
         spl_element: XPathSelector = self.driver.xpath(spl_selector)
         spl_element.wait(timeout=20)
         if spl_element.exists:
-            # spl_element.click(timeout=2)
 
-            # spl_active_selector = '//*[@resource-id="imageCheck"]'
             spl_monthly_selector = '//*[@resource-id="buttonExpandedOption"]'
             spl_active_element: XPathSelector = spl_element.child(spl_monthly_selector)
             spl_active_element.wait(timeout=3)
             if spl_active_element.exists:
-                self.back(4)
                 return True
             
-            self.back(4)
             return False
         
         raise CheckingPaylaterError("checking pay later error")
