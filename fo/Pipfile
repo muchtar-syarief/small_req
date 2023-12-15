@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 adbutils = "*"
 uiautomator2 = "*"
+pyinstaller = "*"
 
 [dev-packages]
 weditor = "*"

@@ -1,5 +1,5 @@
-import time
 
+from retry import retry
 from uiautomator2 import Device
 from uiautomator2._selector import UiObject
 from uiautomator2.xpath import XPathSelector, XMLElement
@@ -21,6 +21,9 @@ class Account:
     last_selected: str = ""
 
     def next_selected_address(self) -> str:
+        if len(self.addresses) == 1:
+            return self.addresses[0]
+        
         for ind, address in enumerate(self.addresses):
             if address == self.last_selected:
                 if ind != len(self.addresses)-1:
@@ -124,6 +127,12 @@ class AccountSteps(Element):
         element: UiObject = self.driver(resourceId=selector)
         element.wait(timeout=20)
         return element.exists
+    
+    @retry(exceptions=SwitchingAccountError, tries=3, delay=0.5)
+    def switching_account(self):
+        self.switch_account()
+        if not self.is_success_switching():
+            raise SwitchingAccountError("switching account failed")
     
     def get_account(self) -> str:
         selector = '//*[@resource-id="labelUserName"]'

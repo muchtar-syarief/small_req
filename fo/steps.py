@@ -16,6 +16,9 @@ class SelectVariantError(Exception):
 class LimitCheckoutError(Exception):
     pass
 
+class AccountLimiTCheckOutError(Exception):
+    pass
+
 class Steps(Element):
     __app_package: str = "com.shopee.id"
     driver: Device

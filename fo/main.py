@@ -5,13 +5,15 @@ import os
 import csv
 import time
 import logging
+import sys
 
 from uiautomator2 import Device
 
-from chrome import Chrome
-from steps import Steps, SelectVariantError
-from product_info import Product, ProductSteps
 from account import AccountSteps, SwitchingAccountError, Account
+from atx import ATX
+from chrome import Chrome
+from product_info import Product, ProductSteps
+from steps import Steps, SelectVariantError, AccountLimiTCheckOutError
 
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -28,6 +30,44 @@ def save_result(data: list[str]):
         writer = csv.writer(file)
         writer.writerow(data)
 
+        
+def open_driver() -> Device:
+    adb = adbutils.adb
+    devices = adb.list()
+
+    serial = devices[0].serial
+
+    driver = ua.connect(serial)
+    if getattr(sys, 'frozen', False):
+        atx = ATX(driver=driver)
+        atx.init_atx_app()
+    return driver
+
+
+def override_req_cacert():
+    def override_where():
+        """ overrides certifi.core.where to return actual location of cacert.pem"""
+        # change this to match the location of cacert.pem
+        return sys._MEIPASS+"/certifi/cacert.pem"
+
+    # is the program compiled?
+    if hasattr(sys, "frozen"):
+        import certifi.core
+
+        os.environ["REQUESTS_CA_BUNDLE"] = override_where()
+        certifi.core.where = override_where
+
+        # delay importing until after where() has been replaced
+        import requests.utils
+        import requests.adapters
+        # replace these variables in case these modules were
+        # imported before we replaced certifi.core.where
+        requests.utils.DEFAULT_CA_BUNDLE_PATH = override_where()
+        requests.adapters.DEFAULT_CA_BUNDLE_PATH = override_where()
+
+
+
+
 def init():
     file_path = "./report_fo.csv"
     open_type = "a"
@@ -39,14 +79,9 @@ def init():
             if open_type == "w+":
                 writer.writerow(headers)
 
-def open_driver() -> Device:
-    adb = adbutils.adb
-    devices = adb.list()
 
-    serial = devices[0].serial
 
-    driver = ua.connect(serial)
-    return driver
+
 
 
 
@@ -58,8 +93,11 @@ def open_driver() -> Device:
 
 if __name__ == "__main__":
     init()
+    override_req_cacert()
 
-    urls = open_datasource()
+    mulai = int(input('Mulai dari line ke: ',))
+    if mulai != 0:
+        mulai = mulai - 1
 
     driver = open_driver()
 
@@ -70,29 +108,14 @@ if __name__ == "__main__":
 
     driver.app_start(steps.app_package, use_monkey=True)
 
-
-
-    # acc = Account()
-    # acc.addresses = ["Imam Mukhtar Syarifudin", "Mukhtar", "Ahmad Supriono", "Tiara (Nada)"]
-    # acc.last_selected = "Mukhtar"
-    # acc.name = "mukhtar.syariefudin"
-    # acc.main_address = "Imam Mukhtar Syarifudin"
-
-    # acc2 = Account()
-    # acc2.addresses = ["Zeen Busthomy", "Zeen PDC", "Zen"]
-    # acc2.last_selected = "Zeen PDC"
-    # acc2.name = "hitampekad"
-    # acc2.main_address = "Zeen Busthomy"
-
     account_state = {}
-    # account_state[acc.name] = acc
-    # account_state[acc2.name] = acc2
 
     try:
-        for ind, url in enumerate(urls):
+        urls = open_datasource()
+        for ind, url in enumerate(urls[mulai:]):
             url = url.split("?")[0]
 
-            logging.info(f"Order {ind+1} starting order {url}")
+            logging.info(f"Url {ind+1} starting order {url}")
 
             account = Account()
             product = Product()
@@ -139,16 +162,26 @@ if __name__ == "__main__":
                 while True:
                     data: Account = account_state[account.name]
                     address = data.next_selected_address()
-                    steps.select_shipping_address(address=address)
-                    time.sleep(1.5)
+                    if not address:
+                        addresses = account_steps.get_account_addresses()
+                        account.main_address = addresses[0]
+                        account.addresses = addresses
+                        steps.back(1)
+                        time.sleep(1)
+                    else:
+                        steps.select_shipping_address(address=address)
+                        account.addresses = data.addresses
+                        account.main_address = data.main_address
+
+                        time.sleep(0.5)
                     if steps.check_checkout():
                         break
             else:
                 addresses = account_steps.get_account_addresses()
                 account.main_address = addresses[0]
                 account.addresses = addresses
-                time.sleep(0.25)
                 steps.back(1)
+                time.sleep(1)
             
             selected_address = product_steps.set_address_info()
             account.set_last_selected(selected_address)
@@ -165,29 +198,32 @@ if __name__ == "__main__":
 
             product.nominal = product_steps.set_price_count()
 
-            while True:
-                steps.create_order()
+            try:
+                while True:
+                    steps.create_order()
 
-                if not steps.check_valid_voucher():
-                    steps.to_voucher()
-                    steps.deactive_voucher()
-                    steps.select_voucher()
-                    continue
-                
+                    if not steps.check_valid_voucher():
+                        steps.to_voucher()
+                        steps.deactive_voucher()
+                        steps.select_voucher()
+                        continue
+                    break
+
                 if steps.limit_checkout():
-                    print("Akun mencapai limit checkout")
-                    continue
+                    raise AccountLimiTCheckOutError("Akun mencapai limit checkout")
+                
+                product.virtual_account = product_steps.set_virtual_account()
 
-                break
+                steps.after_payment()
+            except AccountLimiTCheckOutError as e:
+                print(e)
+                steps.back(3)
 
-            product.virtual_account = product_steps.set_virtual_account()
 
-            steps.after_payment()
-
-            logging.info("Mulai berganti akun")
             account_steps.to_account()
+            logging.info("Mulai berganti akun")
 
-            if account.name == "":
+            if not account.name:
                 account.name = account_steps.get_account()
 
             result = [account.name, product.name, product.url, product.tujuan, product.bank, product.virtual_account, product.nominal]
@@ -198,9 +234,7 @@ if __name__ == "__main__":
 
             account_steps.to_setting()
             account_steps.to_switch_account()
-            account_steps.switch_account()
-            if not account_steps.is_success_switching():
-                raise SwitchingAccountError("failed to change account")
+            account_steps.switching_account()
             
 
     except Exception as e:
