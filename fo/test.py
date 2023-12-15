@@ -124,13 +124,28 @@ if __name__ == "__main__":
     steps = Steps(driver=driver)
     account_steps = AccountSteps(driver=driver)
 
-    driver.app_start(steps.app_package)
+    # driver.app_start(steps.app_package)
+    driver.open_quick_settings()
+    time.sleep(3)
+    el = driver.xpath('//*[@text="Mode Pesawat"]/../../..')
+    el.click()
+    time.sleep(5)
+    el.click()
+    # driver.shell(["settings", "put", "global", "airplane_mode_on", "1"])
+    # driver.shell(["am", "start", "global", "-a", "android.settings.AIRPLANE_MODE_SETTINGS"])
+       
 
-    while True:
-        account_steps.to_account()
 
-        account_steps.to_setting()
-        account_steps.to_switch_account()
-        account_steps.switch_account()
-        if not account_steps.is_success_switching():
-            raise SwitchingAccountError("failed to change account")
+    
+
+    # adb shell input keyevent KEYCODE_DPAD_DOWN
+    # adb shell input keyevent KEYCODE_DPAD_UP
+
+    # while True:
+    #     account_steps.to_account()
+
+    #     account_steps.to_setting()
+    #     account_steps.to_switch_account()
+    #     account_steps.switch_account()
+    #     if not account_steps.is_success_switching():
+    #         raise SwitchingAccountError("failed to change account")

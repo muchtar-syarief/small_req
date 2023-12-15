@@ -113,14 +113,16 @@ if __name__ == "__main__":
     try:
         urls = open_datasource()
         for ind, url in enumerate(urls[mulai:]):
-            url = url.split("?")[0]
-
-            logging.info(f"Url {ind+1} starting order {url}")
 
             account = Account()
             product = Product()
             if ind > 0:
                 account.name = account_steps.get_account()
+                steps.restart_airplane_mode()
+
+            url = url.split("?")[0]
+
+            logging.info(f"Url {ind+1} starting order {url}")
 
             chrome.open_url(url)
             try:
@@ -235,7 +237,7 @@ if __name__ == "__main__":
             account_steps.to_setting()
             account_steps.to_switch_account()
             account_steps.switching_account()
-            
+
 
     except Exception as e:
         print(e)
