@@ -127,10 +127,13 @@ if __name__ == "__main__":
     # driver.app_start(steps.app_package)
     driver.open_quick_settings()
     time.sleep(3)
-    el = driver.xpath('//*[@text="Mode Pesawat"]/../../..')
-    el.click()
-    time.sleep(5)
-    el.click()
+
+    driver.shell(["cmd", "connectivity", "airplane-mode", "disable"])
+
+    # el = driver.xpath('//*[@text="Mode Pesawat"]/../../..')
+    # el.click()
+    # time.sleep(5)
+    # el.click()
     # driver.shell(["settings", "put", "global", "airplane_mode_on", "1"])
     # driver.shell(["am", "start", "global", "-a", "android.settings.AIRPLANE_MODE_SETTINGS"])
        

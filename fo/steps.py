@@ -324,12 +324,11 @@ class Steps(Element):
     def restart_airplane_mode(self):
         self.driver.open_quick_settings()
         time.sleep(3)
-        el: XPathSelector = self.driver.xpath('//*[@text="Mode Pesawat"]/../../..')
-        el.click()
+        self.driver.shell(["cmd", "connectivity", "airplane-mode", "enable"])
         time.sleep(7)
-        el.click()
+        self.driver.shell(["cmd", "connectivity", "airplane-mode", "disable"])
         self.back(2)
-        time.sleep(2)
+        time.sleep(5)
 
     def close_app(self) -> None:
         self.driver.app_stop(self.__app_package)

@@ -113,6 +113,8 @@ if __name__ == "__main__":
     try:
         urls = open_datasource()
         for ind, url in enumerate(urls[mulai:]):
+            if not url:
+                continue
 
             account = Account()
             product = Product()
