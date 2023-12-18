@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "D:\Project\small_req\shopee_remote\live.py", line 84, in main
+    list_comment = bot.open_comment()
+    ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Project\small_req\shopee_remote\live.py", line 49, in change_account
+    self.live_steps.tap_love(duration=duration)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Project\small_req\shopee_remote\steps\account_steps.py", line 47, in to_account
+    element.click()
+  File "D:\Project\small_req\shopee_remote\.venv\Lib\site-packages\uiautomator2\xpath.py", line 595, in click
+    el = self.get(timeout=timeout)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Project\small_req\shopee_remote\.venv\Lib\site-packages\uiautomator2\xpath.py", line 524, in get
+    raise XPathElementNotFoundError(self._xpath_list)
+uiautomator2.exceptions.XPathElementNotFoundError: ['//*[@content-desc="tab_bar_button_me"]/../..']
