@@ -1,43 +1,40 @@
 package main
 
 import (
-	"log"
+	"github.com/muchtar/miningpoolstats/crawl"
+	"github.com/muchtar/miningpoolstats/driver"
+	"github.com/muchtar/miningpoolstats/model"
 )
 
 func main() {
 	w, err := Writer()
 	if err != nil {
-		log.Println(err)
 		panic(err)
 	}
 
-	item := CoinResult{}
+	item := model.CoinResult{}
 	err = w.Write(item.Keys())
 	if err != nil {
-		log.Println(err)
 		panic(err)
 	}
 	w.Flush()
 
-	driver := NewDriver()
+	driver := driver.NewDriver()
 	defer driver.Cancel()
 
-	c := NewCrawl(driver)
+	c := crawl.NewCrawl(driver)
 
 	results, err := c.Run()
 	if err != nil {
-		log.Println(err)
 		panic(err)
 	}
 
 	for result := range results {
-		w.Write(result.Values())
-		w.Flush()
+		values := result.ValuesV2()
+		for _, val := range values {
+			w.Write(val)
+			w.Flush()
+		}
 	}
-
-	// for res := range results {
-	// 	w.Write(res.ToCsv())
-	// 	w.Flush()
-	// }
 
 }

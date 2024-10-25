@@ -23,10 +23,6 @@ class CoSteps(WidgetBehavior):
 
     def __init__(self, driver: Device) -> None:
         super().__init__(driver, "com.shopee.id")
-
-    @property
-    def app_package(self) -> str:
-        return self.__app_package
     
     def buy_now(self) -> None:
         buy_selector = '//*[@resource-id="buttonProductBuyNow"]'

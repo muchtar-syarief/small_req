@@ -29,7 +29,7 @@ class Steps:
         self.driver.app_start(self.app_package, use_monkey=True)
     
     def tap_search_bar(self) -> None:
-        search_element: XPathSelector = self.driver.xpath('//*[@resource-id="com.shopee.id:id/text_container"]')
+        search_element: XPathSelector = self.driver.xpath('//*[@resource-id="com.shopee.id:id/search_prefill_click"]')
         search_element.wait(timeout=10)
         search_element.click()
 
@@ -51,7 +51,7 @@ class Steps:
     def back(self, count: int):
         for i in range(count):
             self.driver.press("back")
-            time.sleep(1)    
+            time.sleep(1.5)    
     
     def input_element(self, input: str):
         search_selector = "android.widget.EditText"
@@ -62,7 +62,7 @@ class Steps:
 
     def search_shop(self, shop: str):
         self.input_element(shop)
-        self.driver.press("back")
+        self.driver.press("enter")
 
         username_selector = "//android.widget.TextView[contains(@resource-id, 'labelUserName')]"
         username_elements: XPathSelector = self.driver.xpath(username_selector)
@@ -70,7 +70,8 @@ class Steps:
         username_elements: list[XMLElement] = username_elements.all()
 
         for username in username_elements:
-            if username.text == shop:
+            uname: str = username.text
+            if uname.lower() == shop:
                 parent = username.parent()
                 parent.click()
                 return True
@@ -109,17 +110,18 @@ class Steps:
         return True
 
     def select_payment(self) -> None:
+        
         payment_selector_id = "checkoutPaymentMethod"
         payment_selector = f'//*[@resource-id="{payment_selector_id}"]'
         payment_element: XPathSelector = self.driver.xpath(payment_selector)
-        payment_element.wait(timeout=2)
+        payment_element.wait(timeout=4)
         if payment_element.exists:
             payment_element.click()
             return
 
         scroll_selector = 'android.widget.ScrollView'
         scroll_element: UiObject = self.driver(className=scroll_selector)
-        scroll_element.scroll.to(resourceId=payment_selector_id)
+        scroll_element.scroll.vert.forward(steps=2)
         
         time.sleep(0.5)
         return self.select_payment()
@@ -150,7 +152,7 @@ class Steps:
     def scroll_variant(self):
         element: UiObject = self.driver(resourceId="sectionTierVariation")
         child = element.child(className="android.widget.ScrollView")
-        child.scroll.to(text="Jumlah")
+        child.scroll.toEnd()
 
     def select_default_variant(self, start_from: int = 0) -> None:
         if start_from >= 2:
@@ -210,19 +212,21 @@ class Steps:
 
     @retry(exceptions=CheckingPaylaterError, tries=3, delay=0.5)
     def is_use_paylater(self) -> bool:
-        spl_selector = "//android.widget.TextView[contains(@text, 'SPayLater')]/../../../../../.."
+        spl_selector = "//android.widget.TextView[contains(@text, 'SPayLater')]/../../../.."
         spl_element: XPathSelector = self.driver.xpath(spl_selector)
         spl_element.wait(timeout=20)
         if spl_element.exists:
 
-            spl_monthly_selector = '//*[@resource-id="buttonExpandedOption"]'
-            spl_active_element: XPathSelector = spl_element.child(spl_monthly_selector)
-            spl_active_element.wait(timeout=3)
-            if spl_active_element.exists:
+            selector = "//android.widget.TextView[contains(@text, 'Tersisa')]"
+            spl_expanded = spl_element.child(selector)
+            if spl_expanded.exists:
                 return True
             
             return False
         
+        if self.check_checkout():
+            self.select_payment()
+
         raise CheckingPaylaterError("checking pay later error")
 
 

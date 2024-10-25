@@ -10,6 +10,10 @@ class WidgetBehavior:
     def __init__(self, driver: Device, app_package: str) -> None:
         self.driver = driver
         self.__app_package = app_package
+    
+    @property
+    def app_package(self):
+        self.__app_package
 
     def back(self, count: int):
         for i in range(count):

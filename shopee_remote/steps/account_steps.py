@@ -125,7 +125,7 @@ class AccountSteps(WidgetBehavior):
     def is_success_switching(self) -> bool:
         selector = 'sectionMeHeader'
         element: UiObject = self.driver(resourceId=selector)
-        element.wait(timeout=20)
+        element.wait(timeout=30)
         return element.exists
     
     @retry(exceptions=SwitchingAccountError, tries=3, delay=0.5)

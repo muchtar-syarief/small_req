@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('./cacert.pem', './certifi/'), ('./app-uiautomator.apk', './assets/app/'), ('./app-uiautomator-test.apk', './assets/app/')],
+    datas=[('./cacert.pem', './certifi/'), ('./assets/u2.jar', './assets/')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

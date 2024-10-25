@@ -2,7 +2,7 @@ from uiautomator2 import Device
 from uiautomator2.xpath import XPathSelector
 from uiautomator2._selector import UiObject
 
-from ..widget.widget_behavior import WidgetBehavior
+from widget.widget_behavior import WidgetBehavior
 
 class Product:
     name: str = ""

@@ -1,4 +1,4 @@
-package main
+package model
 
 import "strconv"
 
@@ -7,6 +7,24 @@ type Stat struct {
 	Volume            string `csv:"volume"`             // #stats_volume
 	CirculatingSupply string `csv:"circulating_supply"` // #stats_supply_circulating
 	Emission          string `csv:"emission"`           // #stats_supply_emission
+}
+
+type Exchange struct {
+	ExchangeName   string `csv:"exchange_name"`
+	ExchangePair   string `csv:"exchange_pair"`
+	MarketPrice    string `csv:"marke_price"`
+	ExchangeVolume string `csv:"exchange_volume"`
+}
+
+func (e *Exchange) Values() []string {
+	hasil := []string{
+		e.ExchangeName,
+		e.ExchangePair,
+		e.MarketPrice,
+		e.ExchangeVolume,
+	}
+
+	return hasil
 }
 
 type CoinResult struct {
@@ -18,6 +36,7 @@ type CoinResult struct {
 	GithubLink    string `csv:"github_link"`
 	Miners        string `csv:"miners"`
 	Stat
+	Exchanges []*Exchange
 }
 
 func (c *CoinResult) Keys() []string {
@@ -33,6 +52,10 @@ func (c *CoinResult) Keys() []string {
 		"volume",
 		"circulating_supply",
 		"emission",
+		"exchange_name",
+		"exchange_pair",
+		"marke_price",
+		"exchange_volume",
 	}
 	return res
 }
@@ -52,4 +75,16 @@ func (c *CoinResult) Values() []string {
 		c.Emission,
 	}
 	return res
+}
+
+func (c *CoinResult) ValuesV2() [][]string {
+	values := [][]string{}
+	for _, exchange := range c.Exchanges {
+		value := []string{}
+		value = append(value, c.Values()...)
+		value = append(value, exchange.Values()...)
+		values = append(values, value)
+	}
+
+	return values
 }

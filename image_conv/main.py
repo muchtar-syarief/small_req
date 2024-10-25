@@ -29,7 +29,7 @@ def main():
         img_resize = img_file.resize((1200,1200))
         
         output_file = os.path.join(output, fname)
-        img_resize.save(output_file, dpi=(1200,1200), quality=)
+        img_resize.save(output_file, dpi=(1200,1200))
         logging.info(f"Convert image {fname}")
     return
 

@@ -9,6 +9,7 @@ main_images/
 *.png
 *.7z
 *.exe
+*.apk
 __pycache__
 # *.apk
 *.pem

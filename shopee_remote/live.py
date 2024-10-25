@@ -31,6 +31,7 @@ class LiveBot:
         self.live_steps.add_to_bucket()
         if self.co_steps.check_variant():
             self.co_steps.select_variant_alternative()
+        time.sleep(1)
         self.live_steps.back(1)
 
 
@@ -56,6 +57,7 @@ class LiveBot:
         self.account_steps.to_setting()
         self.account_steps.to_switch_account()
         self.account_steps.switching_account()
+
 
     def close_app(self):
         self.live_steps.close_app()
@@ -90,6 +92,7 @@ def main():
             logging.info("Add product to bucket")
             bot.add_to_bucket()
 
+            time.sleep(1)
             bot.open_tab_menu()
 
             logging.info("Change account")
@@ -98,7 +101,7 @@ def main():
         print(e)
         save_error(e)
     finally:
-        # bot.close_app()
+        bot.close_app()
         print("selesai")
 
 
